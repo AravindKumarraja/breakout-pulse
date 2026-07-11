@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: breakout-pulse
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: NODE_TLS_REJECT_UNAUTHORIZED
+        value: "0"
+      - key: NTFY_TOPIC
+        sync: false
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: TELEGRAM_CHAT_ID
+        sync: false
+      - key: DISCORD_WEBHOOK_URL
+        sync: false

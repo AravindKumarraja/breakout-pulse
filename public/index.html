@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BreakoutPulse | Real-Time Breakout & Sentiment Dashboard</title>
+  <!-- Google Fonts: Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Custom Styling -->
+  <link rel="stylesheet" href="style.css">
+  <!-- TradingView Widget Script -->
+  <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+</head>
+<body>
+  <div class="glow-bg glow-green"></div>
+  <div class="glow-bg glow-purple"></div>
+
+  <div class="container">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="logo-area">
+        <i class="fa-solid fa-chart-line-up app-logo-icon"></i>
+        <h1>Breakout<span>Pulse</span></h1>
+        <span class="badge live-badge">LIVE SCANNER</span>
+      </div>
+      <div class="status-area">
+        <div class="status-item">
+          <span class="status-dot" id="ws-status-dot"></span>
+          <span id="ws-status-text">Connecting...</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Grid -->
+    <div class="dashboard-grid">
+      
+      <!-- Left Column: Controls and Details -->
+      <aside class="sidebar">
+        <!-- Watchlist Card -->
+        <div class="glass-card panel-card">
+          <div class="card-header">
+            <h3><i class="fa-solid fa-list-check"></i> Watchlist</h3>
+            <button class="btn btn-icon" id="btn-add-watchlist" title="Add Ticker"><i class="fa-solid fa-plus"></i></button>
+          </div>
+          <div class="watchlist-input-container hidden" id="watchlist-input-group">
+            <input type="text" id="input-ticker" placeholder="e.g. TSLA, BTC-USD" uppercase />
+            <select id="select-type">
+              <option value="stock">Stock</option>
+              <option value="crypto">Crypto</option>
+            </select>
+            <button class="btn btn-sm btn-primary" id="btn-save-ticker"><i class="fa-solid fa-check"></i></button>
+          </div>
+          <div class="watchlist-list" id="watchlist-container">
+            <!-- Dynamically populated -->
+            <div class="loader-placeholder"><i class="fa-solid fa-spinner fa-spin"></i> Loading...</div>
+          </div>
+        </div>
+
+        <!-- Alert Sound / Visual Settings -->
+        <div class="glass-card panel-card">
+          <div class="card-header">
+            <h3><i class="fa-solid fa-sliders"></i> Alert Settings</h3>
+          </div>
+          <div class="settings-group">
+            <div class="setting-row">
+              <label for="check-sound">Audio Alerts</label>
+              <div class="toggle-switch">
+                <input type="checkbox" id="check-sound" checked>
+                <span class="slider"></span>
+              </div>
+            </div>
+            <!-- Browser Notifications -->
+            <div class="notify-permission-row">
+              <div class="notify-label-row">
+                <i class="fa-solid fa-bell"></i>
+                <span>Browser Notifications</span>
+              </div>
+              <div id="notify-status-badge" class="notify-badge badge-blocked">Blocked</div>
+              <button id="btn-enable-notify" class="btn btn-block btn-enable-notify">
+                <i class="fa-solid fa-bell"></i> Enable Browser Alerts
+              </button>
+              <p class="notify-hint" id="notify-hint-text">Click the button above, then click <b>"Allow"</b> in the browser popup.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Notifications Settings (Telegram/Discord) -->
+        <div class="glass-card panel-card">
+          <div class="card-header">
+            <h3><i class="fa-solid fa-bell"></i> Integrations</h3>
+            <button class="btn btn-icon" id="btn-test-alert" title="Send Test Alert"><i class="fa-solid fa-paper-plane"></i></button>
+          </div>
+          <form id="integrations-form" class="settings-form">
+            <!-- Discord -->
+            <div class="form-section">
+              <div class="section-header">
+                <h4><i class="fa-brands fa-discord"></i> Discord Webhook</h4>
+                <div class="toggle-switch switch-sm">
+                  <input type="checkbox" id="discord-enabled">
+                  <span class="slider"></span>
+                </div>
+              </div>
+              <div class="form-group">
+                <input type="password" id="discord-webhook" placeholder="Discord Webhook URL">
+              </div>
+            </div>
+            
+            <!-- Telegram -->
+            <div class="form-section">
+              <div class="section-header">
+                <h4><i class="fa-brands fa-telegram"></i> Telegram Bot</h4>
+                <div class="toggle-switch switch-sm">
+                  <input type="checkbox" id="telegram-enabled">
+                  <span class="slider"></span>
+                </div>
+              </div>
+              <div class="form-group">
+                <input type="password" id="telegram-token" placeholder="Bot Token">
+              </div>
+              <div class="form-group mt-1">
+                <input type="text" id="telegram-chatid" placeholder="Chat ID">
+              </div>
+            </div>
+
+            <!-- ntfy.sh Mobile Push -->
+            <div class="form-section">
+              <div class="section-header">
+                <h4><i class="fa-solid fa-mobile-screen"></i> Mobile Push (ntfy.sh)</h4>
+                <div class="toggle-switch switch-sm">
+                  <input type="checkbox" id="ntfy-enabled">
+                  <span class="slider"></span>
+                </div>
+              </div>
+              <div class="form-group">
+                <input type="text" id="ntfy-topic" placeholder="e.g. breakoutpulse_myname123">
+              </div>
+              <p class="notify-hint" style="margin-top:6px;">Install <b>ntfy</b> app on your phone &rarr; subscribe to the same topic name &rarr; get instant mobile alerts!</p>
+            </div>
+
+            <button type="submit" class="btn btn-block btn-primary">Save Integrations</button>
+          </form>
+        </div>
+      </aside>
+
+      <!-- Center / Right Column: Live Logs and Chart -->
+      <main class="main-content">
+        <!-- Live TradingView Chart Container -->
+        <div class="glass-card chart-card">
+          <div class="chart-header">
+            <div class="chart-active-info">
+              <h2 id="active-chart-title">AAPL</h2>
+              <span class="badge" id="active-chart-badge">Stock</span>
+            </div>
+            <div class="chart-actions">
+              <span class="chart-legend"><i class="fa-solid fa-chart-line"></i> Live Interactive Chart</span>
+            </div>
+          </div>
+          <div class="chart-wrapper" id="tv-chart-container">
+            <!-- TradingView widget goes here -->
+            <div class="chart-placeholder">
+              <i class="fa-solid fa-chart-area placeholder-icon"></i>
+              <p>Select a ticker from the watchlist or alerts feed to load chart</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Live Alerts List -->
+        <div class="glass-card alerts-feed-card">
+          <div class="card-header flex-column-mobile">
+            <h3><i class="fa-solid fa-bolt"></i> Real-Time Breakout Alerts</h3>
+            <div class="alert-filters">
+              <button class="filter-btn active" data-filter="all">All</button>
+              <button class="filter-btn" data-filter="high">High Confidence</button>
+              <button class="filter-btn" data-filter="bullish">Bullish</button>
+              <button class="filter-btn" data-filter="bearish">Bearish</button>
+            </div>
+          </div>
+          <div class="alerts-stream" id="alerts-container">
+            <!-- Dynamically populated -->
+            <div class="empty-alerts">
+              <i class="fa-solid fa-satellite-dish pulse-icon"></i>
+              <p>Scanning news and market prices... Alerts will appear here in real-time.</p>
+            </div>
+          </div>
+        </div>
+      </main>
+
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
