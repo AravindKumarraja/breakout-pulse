@@ -84,11 +84,13 @@ function getCurrencySymbol(symbol) {
   const indianPatterns = [
     'NIFTY', 'BANKNIFTY', 'NIFTYBANK', 'SENSEX',
     'NIFTYBEES', 'NIFTYMIDCAP', 'NIFTYIT', 'NIFTYPHARMA',
-    'NIFTYFMCG', 'NIFTYAUTO', 'NIFTYMETAL', 'NIFTYREALTY'
+    'NIFTYFMCG', 'NIFTYAUTO', 'NIFTYMETAL', 'NIFTYREALTY',
+    'NSEI', 'NSEBANK', 'BSESN'
   ];
   if (indianPatterns.some(p => s.includes(p))) return '₹';
   if (s.endsWith('.NS') || s.endsWith('.BO')) return '₹';
   if (s.startsWith('NSE:') || s.startsWith('BSE:')) return '₹';
+  if (s === '^NSEI' || s === '^NSEBANK' || s === '^BSESN') return '₹';
   return '$';
 }
 

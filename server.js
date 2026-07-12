@@ -35,13 +35,29 @@ function getCurrencySymbol(symbol) {
   const indianPatterns = [
     'NIFTY', 'BANKNIFTY', 'NIFTYBANK', 'SENSEX',
     'NIFTYBEES', 'NIFTYMIDCAP', 'NIFTYIT', 'NIFTYPHARMA',
-    'NIFTYFMCG', 'NIFTYAUTO', 'NIFTYMETAL', 'NIFTYREALTY'
+    'NIFTYFMCG', 'NIFTYAUTO', 'NIFTYMETAL', 'NIFTYREALTY',
+    'NSEI', 'NSEBANK', 'BSESN'
   ];
   if (indianPatterns.some(p => s.includes(p))) return '₹';
   if (s.endsWith('.NS') || s.endsWith('.BO')) return '₹';
   if (s.startsWith('NSE:') || s.startsWith('BSE:')) return '₹';
   if (s === '^NSEI' || s === '^NSEBANK' || s === '^BSESN') return '₹';
   return '$';
+}
+
+// Index helper to match common news search/filter strings
+function getIndexNewsRegex(symbol) {
+  const s = symbol.toUpperCase().replace(/[\^\s]+/g, '');
+  if (s === 'NSEI' || s === 'NIFTY' || s === 'NIFTY50') {
+    return /\b(Nifty|Nifty\s*50|NSEI)\b/i;
+  }
+  if (s === 'BSESN' || s === 'SENSEX') {
+    return /\b(Sensex|BSE|BSESN)\b/i;
+  }
+  if (s === 'NSEBANK' || s === 'BANKNIFTY' || s === 'NIFTYBANK') {
+    return /\b(Bank\s*Nifty|Nifty\s*Bank|NSEBANK)\b/i;
+  }
+  return null;
 }
 
 // Custom quote fetcher using public Yahoo Chart v8 API
@@ -503,14 +519,16 @@ async function scanMarketNews() {
 
         // Match against every watchlist item
         for (const asset of config.watchlist) {
-          // Build smart regex: match ticker base (RELIANCE from RELIANCE.NS) OR first 2 words of company name
-          const tickerBase = asset.symbol.replace(/\.(NS|BO)$/i, '').replace(/[\^\-]/g, ' ').trim();
-          const nameWords = (asset.name || '').split(' ').slice(0, 2).join('\\s*');
-          let pattern;
-          try {
-            pattern = new RegExp(`\\b(${tickerBase}|${nameWords})\\b`, 'i');
-          } catch (e) {
-            pattern = new RegExp(tickerBase, 'i');
+          // Build smart regex: match base index names first, then fall back
+          let pattern = getIndexNewsRegex(asset.symbol);
+          if (!pattern) {
+            const tickerBase = asset.symbol.replace(/\.(NS|BO)$/i, '').replace(/[\^\-]/g, ' ').trim();
+            const nameWords = (asset.name || '').split(' ').slice(0, 2).join('\\s*');
+            try {
+              pattern = new RegExp(`\\b(${tickerBase}|${nameWords})\\b`, 'i');
+            } catch (e) {
+              pattern = new RegExp(tickerBase, 'i');
+            }
           }
           const content = item.title + ' ' + (item.contentSnippet || '');
 
